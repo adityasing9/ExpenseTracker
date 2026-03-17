@@ -1,68 +1,64 @@
 import matplotlib
-matplotlib.use('Agg')  # 👈 FIX (no GUI mode)
+matplotlib.use('Agg')  # No GUI (important for deployment)
 
 import matplotlib.pyplot as plt
 from flask import Flask, render_template, request
 import pandas as pd
+import os
 
 app = Flask(__name__)
 
+# 🟢 Home Page
 @app.route("/")
 def home():
     return render_template("index.html")
 
+
+# 🟡 Add Expense
 @app.route("/add", methods=["POST"])
 def add():
     amount = request.form["amount"]
     category = request.form["category"]
 
+    # Read CSV
     df = pd.read_csv("expenses.csv")
 
+    # Add new data
     new_data = {"amount": int(amount), "category": category}
     df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
 
+    # Save back
     df.to_csv("expenses.csv", index=False)
 
     return "Expense Added!"
 
+
+# 🔵 View Dashboard
 @app.route("/view")
 def view():
-    import matplotlib.pyplot as plt
 
     df = pd.read_csv("expenses.csv")
 
+    # Basic analysis
     total = df["amount"].sum()
     category_sum = df.groupby("category")["amount"].sum()
 
-    from sklearn.linear_model import LinearRegression
-    import numpy as np
-
-    # Prepare data
-    amounts = df["amount"].values
-
-    # X = index (0,1,2...)
-    X = np.arange(len(amounts)).reshape(-1, 1)
-    y = amounts
-
-    # Train model
-    model = LinearRegression()
-    model.fit(X, y)
-
-    # Predict next expense
-    next_index = [[len(amounts)]]
+    # 🔥 Prediction (robust)
     prediction = int(df["amount"].median())
+
     if df["amount"].max() > 2000:
         note = "⚠️ High-value expenses detected, prediction adjusted"
     else:
         note = "Spending pattern looks normal"
 
+    # 📊 Category-wise prediction
     category_prediction = df.groupby("category")["amount"].median().to_dict()
 
-    # 🔥 INSIGHTS
+    # 📊 Insights
     highest_amount = category_sum.max()
     highest_categories = category_sum[category_sum == highest_amount].index.tolist()
 
-    # Create graphs
+    # 📈 Graphs
     plt.figure()
     category_sum.plot(kind="bar")
     plt.title("Expenses by Category")
@@ -86,5 +82,7 @@ def view():
         category_prediction=category_prediction
     )
 
+
+# 🔴 Run App (for deployment)
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
