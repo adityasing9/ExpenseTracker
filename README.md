@@ -24,7 +24,7 @@ A full-stack web application built using Flask that helps users track expenses, 
 
 ## 🌐 Live Demo
 
-👉 [https://your-render-url.onrender.com](https://expensetracker-sot6.onrender.com/)
+👉 https://expensetracker-sot6.onrender.com/
 
 ---
 
