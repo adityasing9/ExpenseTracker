@@ -21,6 +21,10 @@ def add():
     category = request.form["category"]
 
     # Read CSV
+    if not os.path.exists("expenses.csv"):
+        df = pd.DataFrame(columns=["amount", "category"])
+        df.to_csv("expenses.csv", index=False)
+
     df = pd.read_csv("expenses.csv")
 
     # Add new data
