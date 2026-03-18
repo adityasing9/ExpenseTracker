@@ -40,42 +40,58 @@ def add():
 # 🔵 View Dashboard
 @app.route("/view")
 def view():
-    if df.empty:
-        return "No data available. Please add expenses."
+
+    import os
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+    # Ensure CSV exists
+    if not os.path.exists("expenses.csv"):
+        df = pd.DataFrame(columns=["amount", "category"])
+        df.to_csv("expenses.csv", index=False)
+
     df = pd.read_csv("expenses.csv")
 
-    # Basic analysis
+    # Handle empty data
+    if df.empty:
+        return "No data available. Please add expenses."
+
+    # Ensure correct columns
+    if "amount" not in df.columns or "category" not in df.columns:
+        return "CSV format error"
+
+    # Convert amount safely
+    df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
+    df = df.dropna()
+
     total = df["amount"].sum()
     category_sum = df.groupby("category")["amount"].sum()
 
-    # 🔥 Prediction (robust)
+    # Prediction
     prediction = int(df["amount"].median())
 
     if df["amount"].max() > 2000:
-        note = "⚠️ High-value expenses detected, prediction adjusted"
+        note = "⚠️ High-value expenses detected"
     else:
         note = "Spending pattern looks normal"
 
-    # 📊 Category-wise prediction
     category_prediction = df.groupby("category")["amount"].median().to_dict()
 
-    # 📊 Insights
     highest_amount = category_sum.max()
     highest_categories = category_sum[category_sum == highest_amount].index.tolist()
 
-    # 📈 Graphs
+    # Ensure static folder
     if not os.path.exists("static"):
         os.makedirs("static")
 
+    # Graphs
     plt.figure()
     category_sum.plot(kind="bar")
-    plt.title("Expenses by Category")
     plt.savefig("static/bar.png")
     plt.close()
 
     plt.figure()
     category_sum.plot(kind="pie", autopct='%1.1f%%')
-    plt.title("Category Distribution")
     plt.savefig("static/pie.png")
     plt.close()
 
