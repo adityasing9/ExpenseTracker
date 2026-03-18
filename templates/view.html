@@ -3,7 +3,6 @@
 <head>
     <title>Dashboard</title>
 
-    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
 
     <style>
@@ -34,7 +33,7 @@
         .card {
             background: #1e293b;
             padding: 20px;
-            width: 300px;
+            width: 320px;
             border-radius: 12px;
             box-shadow: 0px 4px 20px rgba(0,0,0,0.3);
             transition: 0.3s;
@@ -56,20 +55,32 @@
         }
 
         li {
-            padding: 6px;
-            border-radius: 6px;
-            margin: 5px 0;
+            margin: 6px 0;
         }
 
-        /* 🎨 Category Colors */
-        .food { background: #16a34a; }
-        .travel { background: #2563eb; }
-        .masti { background: #f59e0b; }
-        .visit { background: #ef4444; }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #334155;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        button {
+            background: #ef4444;
+            border: none;
+            padding: 6px 10px;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
         img {
             width: 100%;
-            margin-top: 10px;
+            max-width: 1200px;
+            margin: 20px auto;
+            display: block;
             border-radius: 10px;
         }
 
@@ -81,10 +92,30 @@
             text-decoration: none;
         }
 
-        /* ✨ Animation */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        .graph-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+        }
+
+        .graph-card {
+            width: 95%;
+            max-width: 1400px;
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .graphs {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
         }
 
     </style>
@@ -94,23 +125,74 @@
 
 <h1>💰 Expense Dashboard</h1>
 
+<div class="graph-container">
+    <div class="graph-card">
+        <h3>📊 Visual Insights</h3>
+        <div class="graphs">
+            <img src="{{ url_for('static', filename='bar.png') }}">
+        </div>
+    </div>
+</div>
+
 <div class="container">
     <div class="grid">
 
+        <!-- 🗑 DELETE FEATURE -->
+        <div class="card">
+            <h3>🗑 Manage Expenses</h3>
+            <ul>
+                {% for item in data %}
+                <li>
+                    <div class="row">
+                        <span>{{ item.category }} : ₹ {{ item.amount }}</span>
+
+                        <form method="POST" action="/delete/{{ loop.index0 }}"
+                              onsubmit="return confirm('Delete this expense?');">
+                            <button>Delete</button>
+                        </form>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Category Spending -->
+        <div class="card">
+            <h3>Category-wise Spending</h3>
+            <ul>
+                {% for category, amount in category_sum.items() %}
+                <li style="
+                    background: hsl({{ (loop.index0 * 360 // category_sum|length) }}, 70%, 45%);
+                    padding: 8px;
+                    border-radius: 6px;">
+                    {{ category }} : ₹ {{ amount }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Category Prediction -->
+        <div class="card">
+            <h3>📊 Category Prediction</h3>
+            <ul>
+                {% for category, amount in category_prediction.items() %}
+                <li style="
+                    background: hsl({{ (loop.index0 * 360 // category_prediction|length) }}, 70%, 45%);
+                    padding: 8px;
+                    border-radius: 6px;">
+                    {{ category }} → ₹ {{ amount }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Total -->
         <div class="card">
             <h3>Total Spending</h3>
             <p class="total">₹ {{ total }}</p>
         </div>
 
-        <div class="card">
-            <h3>Category-wise Spending</h3>
-            <ul>
-                {% for category, amount in category_sum.items() %}
-                    <li class="{{ category }}">{{ category }} : ₹ {{ amount }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-
+        <!-- Insights -->
         <div class="card">
             <h3>📊 Insights</h3>
             <p>
@@ -118,26 +200,12 @@
                 ₹ {{ highest_amount }}
             </p>
         </div>
-
+        
+        <!-- Prediction -->
         <div class="card">
             <h3>🤖 Prediction</h3>
             <p>₹ {{ prediction }}</p>
             <p>{{ note }}</p>
-        </div>
-
-        <div class="card">
-            <h3>📊 Category Prediction</h3>
-            <ul>
-                {% for category, amount in category_prediction.items() %}
-                    <li class="{{ category }}">{{ category }} → ₹ {{ amount }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <div class="card">
-            <h3>📈 Graphs</h3>
-            <img src="{{ url_for('static', filename='bar.png') }}">
-            <img src="{{ url_for('static', filename='pie.png') }}">
         </div>
 
     </div>

@@ -1,10 +1,11 @@
 import matplotlib
-matplotlib.use('Agg')  # No GUI (important for deployment)
+matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import pandas as pd
 import os
+import matplotlib.colors as mcolors
 
 app = Flask(__name__)
 
@@ -20,30 +21,38 @@ def add():
     amount = request.form["amount"]
     category = request.form["category"]
 
-    # Read CSV
     if not os.path.exists("expenses.csv"):
         df = pd.DataFrame(columns=["amount", "category"])
         df.to_csv("expenses.csv", index=False)
 
     df = pd.read_csv("expenses.csv")
 
-    # Add new data
     new_data = {"amount": int(amount), "category": category}
     df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
 
-    # Save back
     df.to_csv("expenses.csv", index=False)
 
-    return "Expense Added!"
+    return redirect("/view")   # 🔥 better UX
+
+
+# 🗑 Delete Expense
+@app.route("/delete/<int:index>", methods=["POST"])
+def delete(index):
+    if not os.path.exists("expenses.csv"):
+        return redirect("/view")
+
+    df = pd.read_csv("expenses.csv")
+
+    if 0 <= index < len(df):
+        df = df.drop(index).reset_index(drop=True)
+        df.to_csv("expenses.csv", index=False)
+
+    return redirect("/view")   # 🔥 redirect instead of text
 
 
 # 🔵 View Dashboard
 @app.route("/view")
 def view():
-
-    import os
-    import pandas as pd
-    import matplotlib.pyplot as plt
 
     # Ensure CSV exists
     if not os.path.exists("expenses.csv"):
@@ -52,20 +61,26 @@ def view():
 
     df = pd.read_csv("expenses.csv")
 
-    # Handle empty data
+    # Handle empty
     if df.empty:
         return "No data available. Please add expenses."
 
-    # Ensure correct columns
-    if "amount" not in df.columns or "category" not in df.columns:
-        return "CSV format error"
-
-    # Convert amount safely
+    # Clean data
     df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
     df = df.dropna()
 
     total = df["amount"].sum()
     category_sum = df.groupby("category")["amount"].sum()
+
+    # 🔥 Send full data for delete feature
+    data = df.to_dict(orient="records")
+
+    # 🔥 Dynamic Colors
+    categories = category_sum.index.tolist()
+    colors = [
+        mcolors.hsv_to_rgb((i / len(categories), 0.7, 0.7))
+        for i in range(len(categories))
+    ]
 
     # Prediction
     prediction = int(df["amount"].median())
@@ -84,15 +99,27 @@ def view():
     if not os.path.exists("static"):
         os.makedirs("static")
 
-    # Graphs
-    plt.figure()
-    category_sum.plot(kind="bar")
-    plt.savefig("static/bar.png")
-    plt.close()
+    # 📊 Graph
+    plt.figure(figsize=(20, 10))
 
-    plt.figure()
-    category_sum.plot(kind="pie", autopct='%1.1f%%')
-    plt.savefig("static/pie.png")
+    category_sum.plot(
+        kind="bar",
+        color=colors,
+        width=0.6
+    )
+
+    plt.title("Expenses by Category", fontsize=22)
+    plt.xlabel("Category", fontsize=16)
+    plt.ylabel("Amount", fontsize=16)
+
+    plt.xticks(fontsize=14, rotation=0)
+    plt.yticks(fontsize=14)
+
+    for i, v in enumerate(category_sum):
+        plt.text(i, v + 50, str(int(v)), ha='center', fontsize=12)
+
+    plt.tight_layout()
+    plt.savefig("static/bar.png")
     plt.close()
 
     return render_template(
@@ -103,10 +130,11 @@ def view():
         highest_amount=highest_amount,
         prediction=prediction,
         note=note,
-        category_prediction=category_prediction
+        category_prediction=category_prediction,
+        data=data   # 🔥 IMPORTANT
     )
 
 
-# 🔴 Run App (for deployment)
+# 🔴 Run App
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
