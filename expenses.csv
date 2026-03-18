@@ -1,4 +1,4 @@
-amount,category
+amount,category,date,
 200,food
 500,travel
 500,food
@@ -13,3 +13,4 @@ amount,category
 200,bike
 700,hom
 500,food
+4,food

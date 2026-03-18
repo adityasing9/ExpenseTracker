@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(135deg, #6b8fb3, #3b5f87);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, #1e40af, #1e3a8a);
+        }
+
+        .circle1 { width: 300px; height: 300px; left: 50px; top: 80px; }
+        .circle2 { width: 500px; height: 500px; right: -100px; bottom: -100px; }
+
+.register-box {
+    animation: float 5s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(20px); }
+    50% { transform: translateY(0px); }
+}
+
+        h1 {
+            margin-bottom: 25px;
+            font-weight: 300;
+        }
+
+        .input-box {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        /* FIXED INPUT */
+        .input-box input {
+            width: 100%;
+            padding: 14px 50px 14px 45px; /* 👈 more space on RIGHT */
+            border-radius: 10px;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .input-box input::placeholder {
+            color: #ddd;
+        }
+
+        /* LEFT ICON */
+        .input-box i.left-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* RIGHT EYE ICON (FIXED) */
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .error {
+            color: #fca5a5;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .success {
+            display: none;
+            font-size: 18px;
+            color: #bbf7d0;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 12px;
+            width: 100%;
+            border-radius: 20px;
+            border: none;
+            background: #e5e7eb;
+            cursor: pointer;
+        }
+
+        button.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .link {
+            margin-top: 15px;
+            display: block;
+            color: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="circle circle1"></div>
+<div class="circle circle2"></div>
+
+<div class="register-box">
+
+    <h1>Register</h1>
+
+    <div id="successMsg" class="success">
+        ✅ Account created successfully!
+    </div>
+
+    <div id="errorMsg" class="error"></div>
+
+    <form method="POST" onsubmit="return validateForm()">
+
+        <!-- USERNAME -->
+        <div class="input-box">
+            <i class="fas fa-user left-icon"></i>
+            <input name="username" placeholder="Username" required>
+        </div>
+
+        <!-- PASSWORD -->
+        <div class="input-box">
+            <i class="fas fa-lock left-icon"></i>
+            <input id="password" type="password" name="password" placeholder="Password" required>
+            <i class="fas fa-eye toggle-password" onclick="toggleAllPasswords()"></i>
+        </div>
+
+        <!-- CONFIRM -->
+        <div class="input-box">
+            <i class="fas fa-lock left-icon"></i>
+            <input id="confirm" type="password" placeholder="Confirm Password" required>
+        </div>
+
+        <button id="btn" type="submit">Register</button>
+    </form>
+
+    <a href="/login" class="link">Already have an account? Login</a>
+</div>
+
+<script>
+function toggleAllPasswords() {
+    const pwd = document.getElementById("password");
+    const confirm = document.getElementById("confirm");
+    const icon = document.querySelector(".toggle-password");
+
+    const isHidden = pwd.type === "password";
+
+    pwd.type = confirm.type = isHidden ? "text" : "password";
+
+    icon.classList.toggle("fa-eye");
+    icon.classList.toggle("fa-eye-slash");
+}
+
+function validateForm() {
+    const pwd = document.getElementById("password").value;
+    const confirm = document.getElementById("confirm").value;
+    const error = document.getElementById("errorMsg");
+    const success = document.getElementById("successMsg");
+    const btn = document.getElementById("btn");
+
+    error.innerText = "";
+
+    if (pwd !== confirm) {
+        error.innerText = "Passwords do not match";
+        return false;
+    }
+
+    btn.classList.add("loading");
+    btn.innerText = "Creating...";
+
+    setTimeout(() => {
+        success.style.display = "block";
+    }, 800);
+
+    return true;
+}
+</script>
+
+</body>
+</html>
