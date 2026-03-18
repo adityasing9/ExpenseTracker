@@ -66,8 +66,7 @@ A full-stack web application built using Flask that helps users track expenses, 
 
 ## 📂 Project Structure
 
-expense-tracker/
-│
+expense-tracker/<br>
 ├── app.py  
 ├── requirements.txt  
 ├── Procfile  
@@ -82,7 +81,7 @@ expense-tracker/
 ## ⚙️ Local Setup
 
 Clone repo:
-git clone https://github.com/YOUR_USERNAME/expense-tracker.git  
+git clone https://github.com/adityasing9/expense-tracker.git  
 cd expense-tracker  
 
 Install:
