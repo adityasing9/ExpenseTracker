@@ -40,7 +40,8 @@ def add():
 # 🔵 View Dashboard
 @app.route("/view")
 def view():
-
+    if df.empty:
+        return "No data available. Please add expenses."
     df = pd.read_csv("expenses.csv")
 
     # Basic analysis
@@ -63,6 +64,9 @@ def view():
     highest_categories = category_sum[category_sum == highest_amount].index.tolist()
 
     # 📈 Graphs
+    if not os.path.exists("static"):
+        os.makedirs("static")
+
     plt.figure()
     category_sum.plot(kind="bar")
     plt.title("Expenses by Category")
