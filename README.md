@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/Backend-Flask-blue?style=for-the-badge&logo=flask" />
   <img src="https://img.shields.io/badge/Data-Pandas-orange?style=for-the-badge&logo=pandas" />
   <img src="https://img.shields.io/badge/Visualization-Matplotlib-red?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/ML-Scikit--Learn-yellow?style=for-the-badge&logo=scikit-learn" />
+  <img src="https://img.shields.io/badge/AI-Insights-green?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Deploy-Render-purple?style=for-the-badge&logo=render" />
 </p>
 
@@ -18,7 +18,7 @@
 
 # 💰 Expense Tracker AI
 
-A full-stack web application built using Flask that helps users track expenses, visualize spending patterns, and generate intelligent insights.
+A **smart full-stack finance application** built using Flask that helps users track expenses, analyze spending patterns, upload bank statements (PDF), and generate intelligent financial insights.
 
 ---
 
@@ -31,48 +31,61 @@ A full-stack web application built using Flask that helps users track expenses, 
 ## ✨ Features
 
 ### 📊 Expense Management
-- Add daily expenses  
-- Categorize spending  
-- Store and update data  
+- Add & delete expenses  
+- Category-based tracking  
+- User-wise data storage  
+
+### 📂 PDF Bank Statement Upload
+- Upload bank PDF  
+- Auto-extract transactions  
+- Auto-categorization (Food, Travel, Shopping, etc.)  
+- Handles real-world noisy data  
 
 ### 📈 Data Analysis
-- Total expense calculation  
+- Total spending calculation  
 - Category-wise breakdown  
+- Monthly summaries  
 
 ### 📉 Visualization
-- Bar chart  
-- Pie chart  
+- 📊 Bar chart (category spending)  
+- 📈 Monthly trend graph  
+
+### 💰 Budget Tracking
+- Set monthly budget  
+- Remaining balance calculation  
+- Budget alerts  
 
 ### 🧠 Smart Insights
-- Detect highest spending categories  
-- Highlight multiple top categories  
-- Warning for high-value expenses  
+- Income vs Expense detection  
+- Savings calculation  
+- Overspending alerts  
 
 ### 🤖 Prediction
 - Median-based prediction  
 - Category-wise prediction  
-- Handles outliers  
 
 ---
 
 ## 🛠 Tech Stack
 
 - Backend: Flask (Python)  
-- Data: Pandas, NumPy  
+- Data Processing: Pandas  
 - Visualization: Matplotlib  
+- PDF Parsing: pdfplumber  
 - Deployment: Render  
 
 ---
 
 ## 📂 Project Structure
 
-expense-tracker/<br>
+expense-tracker/  
 ├── app.py  
 ├── requirements.txt  
 ├── Procfile  
-├── expenses.csv  
+├── data/  
 ├── templates/  
-│   ├── index.html  
+│   ├── login.html  
+│   ├── register.html  
 │   └── view.html  
 └── static/  
 
@@ -80,58 +93,67 @@ expense-tracker/<br>
 
 ## ⚙️ Local Setup
 
-Clone repo:
+Clone repo:  
 git clone https://github.com/adityasing9/expense-tracker.git  
 
 cd expense-tracker  
 
-Install:
+Install:  
 pip install -r requirements.txt  
 
-Run:
+Run:  
 python app.py  
 
-Open:
+Open:  
 http://127.0.0.1:5000/  
+
+---
+
+## 🚀 Deployment (Render)
+
+Build Command:  
+pip install -r requirements.txt  
+
+Start Command:  
+gunicorn app:app  
 
 ---
 
 ## ⚠️ Limitations
 
-- Uses CSV (no database)  
-- Data not persistent online  
-- Basic UI  
+- Uses CSV instead of database  
+- Render free tier → temporary storage  
+- PDF parsing depends on bank format  
 
 ---
 
 ## 🚀 Future Improvements
 
-- Add login system  
-- Use database  
-- Improve UI  
-- Better ML models  
+- Add database (SQLite/PostgreSQL)  
+- AI-based categorization  
+- Mobile responsive UI  
+- Export reports (PDF/Excel)  
 
 ---
 
 ## 🧠 Key Learnings
 
-- Full-stack Flask app  
-- Data analysis with Pandas  
-- Visualization with Matplotlib  
-- Handling outliers in ML  
-- Deployment workflow  
+- Full-stack Flask development  
+- Data cleaning & PDF parsing  
+- Visualization using Matplotlib  
+- Deployment on Render  
 
 ---
 
 ## 👨‍💻 Author
 
-Your Name  
-https://github.com/adityasing9 
+Aditya Singh  
+https://github.com/adityasing9  
 
 ---
 
 <p align="center">
-  ⭐ If you like this project, give it a star on GitHub!
+  ⭐ If you like this project, give it a star!
 </p>
 
 <p align="center">
