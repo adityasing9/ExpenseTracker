@@ -14,3 +14,6 @@ amount,category,date,
 700,hom
 500,food
 4,food
+200,food,2026-03-01
+500,travel,2026-03-02
+150,shopping,2026-03-03

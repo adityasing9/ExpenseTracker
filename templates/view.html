@@ -199,7 +199,7 @@ button {
                 {% for item in data %}
                 <li>
                     <div class="row">
-                        <span>{{ item.category }} : ₹ {{ item.amount }}</span>
+                        <span>{{ item.category }} :₹ {{ item.amount | abs }}</span>
 
                         <form method="POST" action="/delete/{{ loop.index0 }}"
                               onsubmit="return confirm('Delete this expense?');">
@@ -297,6 +297,41 @@ button {
     <p><b>Avg / Day:</b> ₹ {{ avg_daily }}</p>
 
     <p style="margin-top:10px;">{{ monthly_note }}</p>
+</div>
+
+<div class="card">
+    <h3>📂 Upload Transactions</h3>
+
+    <form method="POST" action="/upload" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv" required>
+        <button>Upload CSV</button>
+    </form>
+
+    <p style="font-size:12px; margin-top:8px;">
+        Format: amount, category, date (optional)
+    </p>
+</div>
+
+<div class="card">
+    <h3>📄 Upload Bank Statement (PDF)</h3>
+
+    <form method="POST" action="/upload_pdf" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".pdf" required>
+        <button>Upload PDF</button>
+    </form>
+
+    <p style="font-size:12px;">
+        Upload bank statement to auto-detect transactions
+    </p>
+</div>
+<div class="card">
+    <h3>💡 Smart Financial Insight</h3>
+
+    <p>Income: ₹ {{ total_income }}</p>
+    <p>Spent: ₹ {{ total_spent }}</p>
+    <p>Savings: ₹ {{ savings }}</p>
+
+    <p><b>{{ insight }}</b></p>
 </div>
 
     </div>

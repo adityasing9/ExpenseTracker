@@ -8,13 +8,32 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import matplotlib.colors as mcolors
+
+import pdfplumber
+import re
+
 from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-if not os.path.exists("data"):
-    os.makedirs("data")
+os.makedirs("data", exist_ok=True)
+os.makedirs("static", exist_ok=True)
+
+# ===== AUTO CATEGORY FUNCTION =====
+def auto_category(text):
+    text = str(text).lower()
+
+    if "swiggy" in text or "zomato" in text or "food" in text:
+        return "Food"
+    elif "uber" in text or "ola" in text or "travel" in text:
+        return "Travel"
+    elif "amazon" in text or "flipkart" in text:
+        return "Shopping"
+    elif "electricity" in text or "bill" in text:
+        return "Bills"
+    else:
+        return "Other"
 
 # ================= AUTH =================
 
@@ -167,9 +186,27 @@ def view():
         )
 
     # ===== BASIC =====
-    total = df["amount"].sum()
-    category_sum = df.groupby("category")["amount"].sum()
+    total = abs(df["amount"].sum())
+    category_sum = df.groupby("category")["amount"].apply(lambda x: abs(x.sum()))
     data = df.to_dict(orient="records")
+    # ✅ NEW: income vs expense
+    spending = df[df["amount"] < 0]["amount"].abs()
+    income = df[df["amount"] > 0]["amount"]
+
+    total_spent = spending.sum()
+    total_income = income.sum()
+
+    if total_income > 0:
+        savings = total_income - total_spent
+    else:
+        savings = -total_spent
+
+    if savings < 0:
+        insight = "🚨 You are overspending more than your income"
+    elif savings < total_income * 0.2:
+        insight = "⚠️ Your savings are very low"
+    else:
+        insight = "✅ Good financial health"
 
     # ===== MONTH =====
     df["month"] = df["date"].dt.to_period("M").astype(str)
@@ -224,7 +261,7 @@ def view():
     # ===== BAR =====
     colors = [mcolors.hsv_to_rgb((i / len(category_sum), 0.7, 0.7)) for i in range(len(category_sum))]
     plt.figure(figsize=(20, 10))
-    category_sum.plot(kind="bar", color=colors)
+    category_sum.abs().plot(kind="bar", color=colors)
     bar_file = f"bar_{username}.png"
     plt.savefig(f"static/{bar_file}")
     plt.close()
@@ -235,6 +272,7 @@ def view():
     line_file = f"line_{username}.png"
     plt.savefig(f"static/{line_file}")
     plt.close()
+    print(df.head())
 
     return render_template(
         "view.html",
@@ -253,11 +291,162 @@ def view():
         monthly_total=monthly_total,
         top_category=top_category,
         avg_daily=avg_daily,
+        total_income=total_income,
+        total_spent=total_spent,
+        savings=savings,
+        insight=insight,
         monthly_note=monthly_note
     )
 
+@app.route("/upload", methods=["POST"])
+def upload():
+    if "user" not in session:
+        return redirect("/login")
 
+    file = request.files["file"]
+
+    if file.filename == "":
+        return redirect("/view")
+
+    df_new = pd.read_csv(file)
+
+    # Auto categorize if category missing
+    if "category" not in df_new.columns:
+        df_new["category"] = df_new.iloc[:, 0].apply(auto_category)
+
+    # Expected columns: amount, category (you can adjust)
+    if "amount" not in df_new.columns:
+        return "CSV must contain 'amount' column"
+
+    # Add missing columns
+    if "category" not in df_new.columns:
+        df_new["category"] = "Other"
+
+    if "date" not in df_new.columns:
+        df_new["date"] = datetime.now().strftime("%Y-%m-%d")
+
+    username = session["user"]
+    file_path = f"data/{username}.csv"
+
+    if not os.path.exists(file_path):
+        df_new.to_csv(file_path, index=False)
+    else:
+        df_old = pd.read_csv(file_path)
+        df = pd.concat([df_old, df_new], ignore_index=True)
+        df.to_csv(file_path, index=False)
+
+    return redirect("/view")
+
+
+
+@app.route("/upload_pdf", methods=["POST"])
+def upload_pdf():
+    if "user" not in session:
+        return redirect("/login")
+
+    file = request.files["file"]
+    if file.filename == "":
+        return redirect("/view")
+
+    transactions = []
+
+    try:
+        with pdfplumber.open(file) as pdf:
+            for page in pdf.pages:
+                text = page.extract_text()
+
+                if not text:
+                    continue
+
+                lines = text.split("\n")
+
+                for line in lines:
+                    line = line.strip()
+                    if not line:
+                        continue
+
+                    lower = line.lower()
+
+                    # ✅ Skip unwanted lines
+                    if any(x in lower for x in [
+                        "opening balance", "ending balance",
+                        "total", "account", "currency"
+                    ]):
+                        continue
+
+                    # ✅ Must contain INR
+                    if "inr" not in lower:
+                        continue
+
+                    # ✅ RELAXED DATE CHECK (FIXED)
+                    if not re.search(r"\d{2}.*\d{4}", line):
+                        continue
+
+                    # ✅ FLEXIBLE AMOUNT EXTRACTION (FIXED)
+                    matches = re.findall(r"([\d,]+\.\d{2})", line)
+
+                    if len(matches) < 2:
+                        continue
+
+                    try:
+                        values = [float(x.replace(",", "")) for x in matches]
+
+                        # transaction = second last value
+                        amount = values[-2]
+
+                        # ✅ Detect debit/credit (FIXED)
+                        is_debit = "-" in line
+
+                        if is_debit:
+                            amount = -amount
+
+                        # ❌ Remove garbage
+                        if abs(amount) > 100000 or amount == 0:
+                            continue
+
+                    except:
+                        continue
+
+                    category = auto_category(line)
+
+                    transactions.append({
+                        "amount": amount,
+                        "category": category,
+                        "type": "debit" if amount < 0 else "credit",
+                        "date": datetime.now().strftime("%Y-%m-%d")
+                    })
+
+    except Exception as e:
+        return f"Error reading PDF: {str(e)}"
+
+    if not transactions:
+        return "No valid transactions found"
+
+    # ===== SAVE CLEAN DATA =====
+    username = session["user"]
+    file_path = f"data/{username}.csv"
+
+    df_new = pd.DataFrame(transactions)
+
+    # ✅ REMOVE DUPLICATES
+    df_new = df_new.drop_duplicates()
+
+    if os.path.exists(file_path):
+        df_old = pd.read_csv(file_path)
+
+        # ✅ Ensure same columns
+        df_old = df_old.reindex(columns=["amount", "category", "type", "date"])
+
+        df = pd.concat([df_old, df_new], ignore_index=True)
+        df = df.drop_duplicates()
+    else:
+        df = df_new
+
+    df.to_csv(file_path, index=False)
+
+    return redirect("/view")
 # ================= RUN =================
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
