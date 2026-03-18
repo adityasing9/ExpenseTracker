@@ -1,3 +1,4 @@
+from flask import session
 import matplotlib
 matplotlib.use('Agg')
 
@@ -8,16 +9,70 @@ import os
 import matplotlib.colors as mcolors
 
 app = Flask(__name__)
+app.secret_key = "secret123"
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        if not os.path.exists("users.csv"):
+            df = pd.DataFrame(columns=["username", "password"])
+            df.to_csv("users.csv", index=False)
+
+        df = pd.read_csv("users.csv")
+
+        if username in df["username"].values:
+            return "User already exists"
+
+        new_user = {"username": username, "password": password}
+        df = pd.concat([df, pd.DataFrame([new_user])], ignore_index=True)
+        df.to_csv("users.csv", index=False)
+
+        return redirect("/login")
+
+    return render_template("register.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        if not os.path.exists("users.csv"):
+            return "No users found"
+
+        df = pd.read_csv("users.csv")
+
+        user = df[(df["username"] == username) & (df["password"] == password)]
+
+        if not user.empty:
+            session["user"] = username
+            return redirect("/view")
+        else:
+            return "Invalid credentials"
+
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect("/login")
 
 # 🟢 Home Page
 @app.route("/")
 def home():
-    return render_template("index.html")
+    if "user" in session:
+        return redirect("/view")
+    return redirect("/login")
 
 
 # 🟡 Add Expense
 @app.route("/add", methods=["POST"])
 def add():
+    if "user" not in session:
+        return redirect("/login")
     amount = request.form["amount"]
     category = request.form["category"]
 
@@ -38,6 +93,8 @@ def add():
 # 🗑 Delete Expense
 @app.route("/delete/<int:index>", methods=["POST"])
 def delete(index):
+    if "user" not in session:
+        return redirect("/login")
     if not os.path.exists("expenses.csv"):
         return redirect("/view")
 
@@ -53,7 +110,8 @@ def delete(index):
 # 🔵 View Dashboard
 @app.route("/view")
 def view():
-
+    if "user" not in session:
+        return redirect("/login")
     # Ensure CSV exists
     if not os.path.exists("expenses.csv"):
         df = pd.DataFrame(columns=["amount", "category"])
