@@ -2,12 +2,16 @@
 <html>
 <head>
     <title>Dashboard</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+
     <style>
         body {
-            font-family: Arial;
-            background: #f4f6f8;
+            font-family: 'Poppins', sans-serif;
+            background: #0f172a;
+            color: white;
             margin: 0;
-            padding: 0;
         }
 
         h1 {
@@ -28,16 +32,22 @@
         }
 
         .card {
-            background: white;
+            background: #1e293b;
             padding: 20px;
             width: 300px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0px 4px 20px rgba(0,0,0,0.3);
+            transition: 0.3s;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.02);
         }
 
         .total {
-            font-size: 24px;
-            color: green;
+            font-size: 26px;
+            color: #22c55e;
         }
 
         ul {
@@ -46,21 +56,37 @@
         }
 
         li {
-            padding: 5px 0;
+            padding: 6px;
+            border-radius: 6px;
+            margin: 5px 0;
         }
+
+        /* 🎨 Category Colors */
+        .food { background: #16a34a; }
+        .travel { background: #2563eb; }
+        .masti { background: #f59e0b; }
+        .visit { background: #ef4444; }
 
         img {
             width: 100%;
             margin-top: 10px;
+            border-radius: 10px;
         }
 
         a {
             display: block;
             text-align: center;
             margin: 20px;
+            color: #38bdf8;
             text-decoration: none;
-            color: #333;
         }
+
+        /* ✨ Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
     </style>
 </head>
 
@@ -80,7 +106,7 @@
             <h3>Category-wise Spending</h3>
             <ul>
                 {% for category, amount in category_sum.items() %}
-                    <li>{{ category }} : ₹ {{ amount }}</li>
+                    <li class="{{ category }}">{{ category }} : ₹ {{ amount }}</li>
                 {% endfor %}
             </ul>
         </div>
@@ -89,7 +115,7 @@
             <h3>📊 Insights</h3>
             <p>
                 Highest: <b>{{ highest_categories | join(', ') }}</b><br>
-                Amount: ₹ {{ highest_amount }}
+                ₹ {{ highest_amount }}
             </p>
         </div>
 
@@ -103,7 +129,7 @@
             <h3>📊 Category Prediction</h3>
             <ul>
                 {% for category, amount in category_prediction.items() %}
-                    <li>{{ category }} → ₹ {{ amount }}</li>
+                    <li class="{{ category }}">{{ category }} → ₹ {{ amount }}</li>
                 {% endfor %}
             </ul>
         </div>
