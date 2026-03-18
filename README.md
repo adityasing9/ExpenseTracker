@@ -82,6 +82,7 @@ expense-tracker/<br>
 
 Clone repo:
 git clone https://github.com/adityasing9/expense-tracker.git  
+
 cd expense-tracker  
 
 Install:

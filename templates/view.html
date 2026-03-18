@@ -5,25 +5,34 @@
     <style>
         body {
             font-family: Arial;
-            background-color: #f5f6fa;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
             text-align: center;
+            padding: 20px;
         }
 
         .container {
-            width: 80%;
+            width: 90%;
             margin: auto;
+        }
+
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
         }
 
         .card {
             background: white;
             padding: 20px;
-            margin: 15px;
+            width: 300px;
             border-radius: 10px;
-            box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            color: #2f3640;
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
         }
 
         .total {
@@ -37,36 +46,33 @@
         }
 
         li {
-            padding: 8px;
-            font-size: 18px;
+            padding: 5px 0;
         }
 
         img {
-            margin: 10px;
-            border-radius: 10px;
+            width: 100%;
+            margin-top: 10px;
         }
 
         a {
+            display: block;
+            text-align: center;
+            margin: 20px;
             text-decoration: none;
-            color: white;
-            background: #273c75;
-            padding: 10px 15px;
-            border-radius: 5px;
-        }
-
-        a:hover {
-            background: #40739e;
+            color: #333;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
 
-        <h1>💰 Expense Dashboard</h1>
+<h1>💰 Expense Dashboard</h1>
+
+<div class="container">
+    <div class="grid">
 
         <div class="card">
-            <h2>Total Spending</h2>
+            <h3>Total Spending</h3>
             <p class="total">₹ {{ total }}</p>
         </div>
 
@@ -74,41 +80,44 @@
             <h3>Category-wise Spending</h3>
             <ul>
                 {% for category, amount in category_sum.items() %}
-                    <li><b>{{ category }}</b> : ₹ {{ amount }}</li>
+                    <li>{{ category }} : ₹ {{ amount }}</li>
                 {% endfor %}
             </ul>
         </div>
 
         <div class="card">
-    
-        <div class="card">
-            <div class="card">
-             <h3>📊 Insights</h3>
-                 <p>You spend the most on <b>{{ highest_categories | join(', ') }}</b> 
-                    (₹ {{ highest_amount }}) ⚠️</p>
-            </div>
-            <div class="card">
-                <h3>🤖 Prediction</h3>
-                <p>Next expected expense: <b>₹ {{ prediction }}</b></p>
-                <p>{{ note }}</p>
-
-                <div class="card">
-                    <h3>📊 Category-wise Prediction</h3>
-                    <ul>
-                        {% for category, amount in category_prediction.items() %}
-                            <li><b>{{ category }}</b> → ₹ {{ amount }}</li>
-                        {% endfor %}
-                    </ul>
-              </div>
-            </div>
-            <h3>Graphs</h3>
-            <img src="{{ url_for('static', filename='bar.png') }}" width="400">
-            <img src="{{ url_for('static', filename='pie.png') }}" width="400">
+            <h3>📊 Insights</h3>
+            <p>
+                Highest: <b>{{ highest_categories | join(', ') }}</b><br>
+                Amount: ₹ {{ highest_amount }}
+            </p>
         </div>
 
-        <br>
-        <a href="/">⬅ Back</a>
+        <div class="card">
+            <h3>🤖 Prediction</h3>
+            <p>₹ {{ prediction }}</p>
+            <p>{{ note }}</p>
+        </div>
+
+        <div class="card">
+            <h3>📊 Category Prediction</h3>
+            <ul>
+                {% for category, amount in category_prediction.items() %}
+                    <li>{{ category }} → ₹ {{ amount }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>📈 Graphs</h3>
+            <img src="{{ url_for('static', filename='bar.png') }}">
+            <img src="{{ url_for('static', filename='pie.png') }}">
+        </div>
 
     </div>
+</div>
+
+<a href="/">⬅ Back</a>
+
 </body>
 </html>
