@@ -1,5 +1,6 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, render_template, request, redirect, session
+from flask import send_from_directory
 
 import matplotlib
 matplotlib.use('Agg')
@@ -34,6 +35,12 @@ def auto_category(text):
         return "Bills"
     else:
         return "Other"
+    
+
+
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('static', 'sitemap.xml')
 
 # ================= AUTH =================
 
